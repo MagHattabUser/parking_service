@@ -1,9 +1,12 @@
 from fastapi import FastAPI
+
+from container import get_container
 from routers import zones, places
 import uvicorn
 
 app = FastAPI()
 
+container = get_container()
 app.include_router(zones.router)
 app.include_router(places.router)
 
