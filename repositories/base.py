@@ -6,7 +6,8 @@ class BaseRepository:
         self.db = db
 
     async def get_by_id(self, model, model_id: int):
-        result = await self.db.execute(select(model).where(model.id == model_id))
+        primary_key = model.__mapper__.primary_key[0]
+        result = await self.db.execute(select(model).where(primary_key == model_id))
         return result.scalars().first()
 
     async def save(self, instance):

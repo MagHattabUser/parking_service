@@ -26,3 +26,12 @@ async def get_all_zones(db: AsyncSession = Depends(get_db)):
 async def get_zone(zone_id: int, db: AsyncSession = Depends(get_db)):
     service = ParkingService(ParkingZoneRepository(db), None)
     return await service.get_zone(zone_id)
+
+@router.delete("/zone/{identifier}", response_model=ParkingZoneResponse)
+async def delete_zone(identifier: str, db: AsyncSession = Depends(get_db)):
+    service = ParkingService(ParkingZoneRepository(db), None)
+
+    if identifier.isdigit():
+        identifier = int(identifier)
+
+    return await service.delete_zone(identifier)

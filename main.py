@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from routers import zones, places
 import uvicorn
 
-app = FastAPI(title="Parking Management API")
+app = FastAPI()
 
 app.include_router(zones.router)
 app.include_router(places.router)
