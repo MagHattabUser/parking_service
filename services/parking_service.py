@@ -1,5 +1,5 @@
-from repositories.parking_zone import ParkingZoneRepository
-from repositories.parking_place import ParkingPlaceRepository
+from repositories.impl.parking_zone import ParkingZoneRepository
+from repositories.impl.parking_place import ParkingPlaceRepository
 from models import ParkingZone, ParkingPlace
 from schemas import ParkingZoneCreate, ParkingPlaceCreate
 from fastapi import HTTPException

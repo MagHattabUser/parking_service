@@ -1,8 +1,8 @@
-from repositories.parking_zone import ParkingZoneRepository
-from repositories.parking_place import ParkingPlaceRepository
-from models import ParkingZone, ParkingPlace
-from schemas import ParkingZoneCreate, ParkingPlaceCreate
+from repositories.impl.parking_zone import ParkingZoneRepository
+from models import ParkingZone
+from schemas import ParkingZoneCreate
 from fastapi import HTTPException
+from mapper import ParkingZoneMapper
 
 class ZoneService:
     def __init__(self, zone_repo: ParkingZoneRepository):
@@ -12,7 +12,7 @@ class ZoneService:
         if zone_data.coordinates[0] != zone_data.coordinates[-1]:
             raise HTTPException(status_code=400, detail="Polygon is not closed")
 
-        zone = ParkingZone(**zone_data.dict())
+        zone = ParkingZoneMapper.to_entity(zone_data)
         return await self.zone_repo.save(zone)
 
     async def get_all_zones(self):
@@ -26,3 +26,17 @@ class ZoneService:
         if not zone:
             raise HTTPException(status_code=404, detail="Zone not found")
         return zone
+
+    async def update_zone(self, zone_id: int, zone_data: ParkingZoneCreate):
+        # Проверка, существует ли зона
+        zone = await self.zone_repo.get_by_id(ParkingZone, zone_id)
+        if not zone:
+            raise HTTPException(status_code=404, detail="Zone not found")
+
+        if zone_data.coordinates[0] != zone_data.coordinates[-1]:
+            raise HTTPException(status_code=400, detail="Polygon is not closed")
+
+        zone.name = zone_data.name
+        zone.coordinates = zone_data.coordinates
+
+        return await self.zone_repo.save(zone)

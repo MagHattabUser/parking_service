@@ -1,7 +1,7 @@
-from repositories.parking_place import ParkingPlaceRepository
-from models import ParkingPlace
+from repositories.impl.parking_place import ParkingPlaceRepository
 from schemas import ParkingPlaceCreate
 from fastapi import HTTPException
+from mapper import ParkingPlaceMapper
 
 class PlaceService:
     def __init__(self, place_repo: ParkingPlaceRepository):
@@ -9,9 +9,9 @@ class PlaceService:
 
     async def get_places_by_zone(self, zona_identifier: str | int):
         return await self.place_repo.get_by_zone(zona_identifier)
-    #mapper для преобразование из dto в entity и обратно
+
     async def create_place(self, place_data: ParkingPlaceCreate):
-        place = ParkingPlace(**place_data.dict())
+        place = ParkingPlaceMapper.to_entity(place_data)
         return await self.place_repo.save(place)
 
     async def delete_place(self, place_id: int):

@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from database import get_db
 from schemas import ParkingPlaceCreate, ParkingPlaceResponse
-from repositories.parking_place import ParkingPlaceRepository
 from services.place_service import PlaceService
 from container import get_container
 

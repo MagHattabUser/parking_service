@@ -1,11 +1,7 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from database import get_db
 from schemas import ParkingZoneCreate, ParkingZoneResponse
-from services.parking_service import ParkingService
-from repositories.parking_zone import ParkingZoneRepository
 from services.zone_service import ZoneService
 from container import get_container
 
@@ -37,3 +33,8 @@ async def delete_zone(identifier: str, service: ZoneService = Depends(get_zone_s
         identifier = int(identifier)
 
     return await service.delete_zone(identifier)
+
+@router.patch("/{zone_id}", response_model=ParkingZoneResponse)
+async def update_zone(zone_id: int, zone_data: ParkingZoneCreate, service: ZoneService = Depends(get_zone_service)):
+    return await service.update_zone(zone_id, zone_data)
+

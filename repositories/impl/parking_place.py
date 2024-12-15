@@ -2,9 +2,10 @@ from sqlalchemy import select
 from sqlalchemy.orm.loading import instances
 from .base import BaseRepository
 from models import ParkingPlace, ParkingZone
+from ..i_parking_place import IParkingPlace
 
 
-class ParkingPlaceRepository(BaseRepository):
+class ParkingPlaceRepository(BaseRepository, IParkingPlace):
     async def get_by_zone(self, zone_identifier: str | int):
         query = select(ParkingPlace).join(ParkingZone)
 
@@ -12,17 +13,19 @@ class ParkingPlaceRepository(BaseRepository):
             query = query.where(ParkingZone.id == zone_identifier)
         elif isinstance(zone_identifier, str):
             query = query.where(ParkingZone.name == zone_identifier)
-
-        result = await self.db.execute(query)
+        async with self.db.get_session() as session:
+            result = await session.execute(query)
         return result.scalars().all()
 
     async def get_all(self):
-        result = await self.db.execute(select(ParkingZone))
+        async with self.db.get_session() as session:
+            result = await session.execute(select(ParkingZone))
         return result.scalars().all()
 
     async def delete_by_id(self, place_id: int):
         query = select(ParkingPlace).where(ParkingPlace.id == place_id)
-        result = await self.db.execute(query)
+        async with self.db.get_session() as session:
+            result = await session.execute(query)
         place = result.scalars().first()
 
         if place:
