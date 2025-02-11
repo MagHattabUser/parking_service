@@ -1,10 +1,12 @@
-from repositories.impl.parking_zone import ParkingZoneRepository
-from models import ParkingZone
-from schemas import ParkingZoneCreate
+from infrastructure.repositories.parking_zone import ParkingZoneRepository
+from domain.models import ParkingZone
+from web.schemas import ParkingZoneCreate
 from fastapi import HTTPException
-from mapper import ParkingZoneMapper
+from web.mapper import ParkingZoneMapper
+from application.services.i_zone_service import IZoneService
 
-class ZoneService:
+
+class ZoneService(IZoneService):
     def __init__(self, zone_repo: ParkingZoneRepository):
         self.zone_repo = zone_repo
 
@@ -28,7 +30,6 @@ class ZoneService:
         return zone
 
     async def update_zone(self, zone_id: int, zone_data: ParkingZoneCreate):
-        # Проверка, существует ли зона
         zone = await self.zone_repo.get_by_id(ParkingZone, zone_id)
         if not zone:
             raise HTTPException(status_code=404, detail="Zone not found")

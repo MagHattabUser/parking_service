@@ -1,10 +1,9 @@
 from sqlalchemy import delete
 from sqlalchemy.future import select
-from sqlalchemy.orm.sync import update
 
 from .base import BaseRepository
-from models import ParkingZone, ParkingPlace
-from ..i_parking_zone import IParkingZone
+from domain.models import ParkingZone, ParkingPlace
+from domain.i_parking_zone import IParkingZone
 
 
 class ParkingZoneRepository(BaseRepository, IParkingZone):

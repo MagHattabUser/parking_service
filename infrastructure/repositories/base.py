@@ -1,8 +1,7 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from database import Database
-from repositories.i_base import IBase
+from infrastructure.database import Database
+from domain.i_base import IBase
 
 
 class BaseRepository(IBase):

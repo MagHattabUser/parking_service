@@ -1,9 +1,11 @@
-from repositories.impl.parking_place import ParkingPlaceRepository
-from schemas import ParkingPlaceCreate
+from infrastructure.repositories.parking_place import ParkingPlaceRepository
+from web.schemas import ParkingPlaceCreate
 from fastapi import HTTPException
-from mapper import ParkingPlaceMapper
+from web.mapper import ParkingPlaceMapper
+from application.services.i_place_service import IPlaceService
 
-class PlaceService:
+
+class PlaceService(IPlaceService):
     def __init__(self, place_repo: ParkingPlaceRepository):
         self.place_repo = place_repo
 

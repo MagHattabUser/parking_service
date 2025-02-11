@@ -1,8 +1,7 @@
 from sqlalchemy import select
-from sqlalchemy.orm.loading import instances
 from .base import BaseRepository
-from models import ParkingPlace, ParkingZone
-from ..i_parking_place import IParkingPlace
+from domain.models import ParkingPlace, ParkingZone
+from domain.i_parking_place import IParkingPlace
 
 
 class ParkingPlaceRepository(BaseRepository, IParkingPlace):

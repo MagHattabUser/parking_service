@@ -1,5 +1,5 @@
-from models import ParkingZone, ParkingPlace
-from schemas import (
+from domain.models import ParkingZone, ParkingPlace
+from web.schemas import (
     ParkingZoneCreate,
     ParkingZoneResponse,
     ParkingPlaceCreate,
@@ -9,9 +9,6 @@ from schemas import (
 class ParkingZoneMapper:
     @staticmethod
     def to_entity(dto: ParkingZoneCreate) -> ParkingZone:
-        """
-        Преобразует ParkingZoneCreate в ParkingZone (Entity)
-        """
         return ParkingZone(
             name=dto.name,
             coordinates=dto.coordinates
@@ -19,9 +16,6 @@ class ParkingZoneMapper:
 
     @staticmethod
     def to_response(entity: ParkingZone) -> ParkingZoneResponse:
-        """
-        Преобразует ParkingZone (Entity) в ParkingZoneResponse (DTO)
-        """
         return ParkingZoneResponse(
             id=entity.id,
             name=entity.name,
@@ -32,9 +26,6 @@ class ParkingZoneMapper:
 class ParkingPlaceMapper:
     @staticmethod
     def to_entity(dto: ParkingPlaceCreate) -> ParkingPlace:
-        """
-        Преобразует ParkingPlaceCreate в ParkingPlace (Entity)
-        """
         return ParkingPlace(
             number=dto.number,
             zone_id=dto.zone_id
@@ -42,9 +33,6 @@ class ParkingPlaceMapper:
 
     @staticmethod
     def to_response(entity: ParkingPlace) -> ParkingPlaceResponse:
-        """
-        Преобразует ParkingPlace (Entity) в ParkingPlaceResponse (DTO)
-        """
         return ParkingPlaceResponse(
             id=entity.id,
             number=entity.number,
