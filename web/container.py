@@ -31,7 +31,7 @@ def _init_container() -> punq.Container:
         Database,
         scope=punq.Scope.singleton,
         factory=lambda: Database(
-            url=configs.SQLite_CONNECTION_URI,
+            url=configs.DATABASE_URL,
         ),
     )
     container.register(IParkingZone, factory=lambda: ParkingZoneRepository(container.resolve(Database)))
