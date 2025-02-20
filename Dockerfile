@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "web.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "python init_db.py && uvicorn web.main:app --host 0.0.0.0 --port 8000"]
