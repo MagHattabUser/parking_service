@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16  # Можно использовать latest или конкретную версию
+    container_name: pg_container
+    environment:
+      POSTGRES_USER: admin      # Логин администратора
+      POSTGRES_PASSWORD: secret # Пароль
+      POSTGRES_DB: mydb         # База данных по умолчанию
+      PGDATA: /var/lib/postgresql/data/pgdata
+      # Опциональные настройки производительности:
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+      # Для продвинутых настроек:
+      # -e POSTGRES_SHARED_BUFFERS=256MB
+      # -e POSTGRES_EFFECTIVE_CACHE_SIZE=512MB
+    ports:
+      - "5432:5432"  # Проброс порта: хост:контейнер
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:  # Постоянное хранилище данных

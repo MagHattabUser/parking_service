@@ -7,6 +7,10 @@ class IBase(ABC):
         pass
 
     @abstractmethod
+    async def get_by_all(self, model):
+        pass
+
+    @abstractmethod
     async def save(self, instance):
         pass
 

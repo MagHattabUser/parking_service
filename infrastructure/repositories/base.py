@@ -14,6 +14,12 @@ class BaseRepository(IBase):
             result = await session.execute(select(model).where(primary_key == model_id))
         return result.scalars().first()
 
+    async def get_by_all(self, model):
+        """Получение всех записей модели"""
+        async with self.db.get_session() as session:
+            result = await session.execute(select(model))
+        return result.scalars().all()
+
     async def save(self, instance):
         async with self.db.get_session() as session:
             session.add(instance)
