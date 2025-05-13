@@ -29,4 +29,9 @@ async def update_camera(camera_id: int, data: CameraCreate, service: ICameraServ
 @router.delete("/{camera_id}")
 async def delete_camera(camera_id: int, service: ICameraService = Depends(get_camera_service)):
     await service.delete_camera(camera_id)
-    return {"message": "Camera deleted successfully"} 
+    return {"message": "Camera deleted successfully"}
+
+@router.get("/zone/{zone_id}", response_model=List[CameraResponse], summary="Камеры парковочной зоны")
+async def get_cameras_by_zone(zone_id: int, service: ICameraService = Depends(get_camera_service)):
+    """Возвращает все камеры, установленные в конкретной парковочной зоне"""
+    return await service.list_by_zone(zone_id)

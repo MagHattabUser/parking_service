@@ -37,7 +37,7 @@ class CameraService(ICameraService):
         updated_camera = self.mapper.to_entity(data)
         updated_camera.id = camera_id
         
-        updated_camera = await self.camera_repo.save(updated_camera)
+        updated_camera = await self.camera_repo.update(updated_camera)
         return self.mapper.to_response(updated_camera)
 
     async def delete_camera(self, camera_id: int) -> None:

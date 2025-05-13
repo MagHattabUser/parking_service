@@ -28,8 +28,8 @@ async def get_place(place_id: int, service: IParkingPlaceService = Depends(get_p
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-@router.get("/zone/{zone_identifier}", response_model=List[ParkingPlaceResponse])
-async def get_places_by_zone(zone_id: str | int, service: IParkingPlaceService = Depends(get_place_service)):
+@router.get("/zone/{zone_id}", response_model=List[ParkingPlaceResponse])
+async def get_places_by_zone(zone_id: int, service: IParkingPlaceService = Depends(get_place_service)):
     try:
         return await service.list_by_zone(zone_id)
     except ValueError as e:

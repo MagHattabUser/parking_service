@@ -42,7 +42,7 @@ class ParkingZoneService(IParkingZoneService):
         updated_zone = self.mapper.to_entity(data)
         updated_zone.id = zone_id
         
-        updated_zone = await self.parking_zone_repo.save(updated_zone)
+        updated_zone = await self.parking_zone_repo.update(updated_zone)
         return self.mapper.to_response(updated_zone)
 
     async def delete_zone(self, zone_id: Union[int, str]) -> None:

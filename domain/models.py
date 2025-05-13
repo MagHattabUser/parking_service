@@ -16,6 +16,7 @@ class User(Base):
     email = Column(String, nullable=False)
 
     car_users = relationship("CarUser", back_populates="user")
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
 
 
 class Car(Base):
@@ -90,6 +91,7 @@ class Admin(Base):
     email = Column(String, nullable=False)
 
     parking_zones = relationship("ParkingZone", back_populates="admin")
+    refresh_tokens = relationship("AdminRefreshToken", back_populates="admin", cascade="all, delete-orphan")
 
 
 class ParkingZone(Base):
@@ -160,3 +162,27 @@ class Violation(Base):
     parking_place_id = Column(Integer, ForeignKey("parking_places.id"), nullable=False)
 
     parking_place = relationship("ParkingPlace", back_populates="violations")
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    
+    user = relationship("User", back_populates="refresh_tokens")
+
+
+class AdminRefreshToken(Base):
+    __tablename__ = "admin_refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    admin_id = Column(Integer, ForeignKey("admins.id", ondelete="CASCADE"), nullable=False)
+    token = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    
+    admin = relationship("Admin", back_populates="refresh_tokens")

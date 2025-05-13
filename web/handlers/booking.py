@@ -29,4 +29,19 @@ async def update_booking(booking_id: int, data: BookingCreate, service: IBooking
 @router.delete("/{booking_id}")
 async def delete_booking(booking_id: int, service: IBookingService = Depends(get_booking_service)):
     await service.delete_booking(booking_id)
-    return {"message": "Booking deleted successfully"} 
+    return {"message": "Booking deleted successfully"}
+
+@router.get("/active/list", response_model=List[BookingResponse], summary="Список активных бронирований")
+async def get_active_bookings(service: IBookingService = Depends(get_booking_service)):
+    """Возвращает список всех активных бронирований"""
+    return await service.list_active_bookings()
+
+@router.get("/user/{user_id}", response_model=List[BookingResponse], summary="Бронирования пользователя")
+async def get_user_bookings(user_id: int, service: IBookingService = Depends(get_booking_service)):
+    """Возвращает все бронирования конкретного пользователя"""
+    return await service.list_by_user(user_id)
+
+@router.get("/status/{status_id}", response_model=List[BookingResponse], summary="Бронирования по статусу")
+async def get_bookings_by_status(status_id: int, service: IBookingService = Depends(get_booking_service)):
+    """Возвращает все бронирования с указанным статусом"""
+    return await service.list_by_status(status_id)

@@ -42,7 +42,7 @@ class ViolationService(IViolationService):
         updated_violation = self.mapper.to_entity(data)
         updated_violation.id = violation_id
         
-        updated_violation = await self.violation_repo.save(updated_violation)
+        updated_violation = await self.violation_repo.update(updated_violation)
         return self.mapper.to_response(updated_violation)
 
     async def delete_violation(self, violation_id: int) -> None:

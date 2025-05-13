@@ -1,4 +1,5 @@
 from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.database import Database
 from domain.i_base import IBase
@@ -26,6 +27,14 @@ class BaseRepository(IBase):
             await session.commit()
             await session.refresh(instance)
         return instance
+
+    async def update(self, instance):
+        """Обновление существующей записи"""
+        async with self.db.get_session() as session:
+            merged_instance = await session.merge(instance)
+            await session.commit()
+            await session.refresh(merged_instance)
+        return merged_instance
 
     async def delete(self, instance):
         async with self.db.get_session() as session:

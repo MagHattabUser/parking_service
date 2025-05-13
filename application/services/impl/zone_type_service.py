@@ -33,7 +33,7 @@ class ZoneTypeService(IZoneTypeService):
         updated_zone_type = self.mapper.to_entity(data)
         updated_zone_type.id = zone_type_id
         
-        updated_zone_type = await self.zone_type_repo.save(updated_zone_type)
+        updated_zone_type = await self.zone_type_repo.update(updated_zone_type)
         return self.mapper.to_response(updated_zone_type)
 
     async def delete_zone_type(self, zone_type_id: int) -> None:

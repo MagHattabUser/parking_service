@@ -1,21 +1,51 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import List, Optional, Any
 from datetime import datetime, time
+import re
 
 # User
 class UserBase(BaseModel):
     user_name: str
     phone: str
-    email: str
+    email: EmailStr
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8)
+    
+    @field_validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Пароль должен содержать минимум 8 символов')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Пароль должен содержать хотя бы одну заглавную букву')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Пароль должен содержать хотя бы одну строчную букву')
+        if not re.search(r'\d', v):
+            raise ValueError('Пароль должен содержать хотя бы одну цифру')
+        return v
 
 class UserResponse(UserBase):
     id: int
 
     class Config:
         orm_mode = True
+
+# Token
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    refresh_token: Optional[str] = None
+
+class TokenData(BaseModel):
+    email: str | None = None
+    role: str | None = None    # "user" или "admin"
+    subject_id: int | None = None  # ID пользователя или администратора
+
+class User(UserBase):
+    id: int
+
+    class Config:
+        from_attributes = True
 
 # Car
 class CarBase(BaseModel):
@@ -86,16 +116,34 @@ class ZoneTypeResponse(ZoneTypeBase):
 # Admin
 class AdminBase(BaseModel):
     admin_name: str
-    email: str
+    email: EmailStr
 
 class AdminCreate(AdminBase):
-    password: str
+    password: str = Field(..., min_length=8)
+    
+    @field_validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Пароль должен содержать минимум 8 символов')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Пароль должен содержать хотя бы одну заглавную букву')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Пароль должен содержать хотя бы одну строчную букву')
+        if not re.search(r'\d', v):
+            raise ValueError('Пароль должен содержать хотя бы одну цифру')
+        return v
 
 class AdminResponse(AdminBase):
     id: int
 
     class Config:
         orm_mode = True
+        
+class Admin(AdminBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
 
 # ParkingZone
 type Coordinates = List[List[float]]
@@ -196,3 +244,28 @@ class ViolationResponse(ViolationBase):
 
     class Config:
         orm_mode = True
+
+# Схемы для авторизации
+# Базовый валидатор пароля
+def validate_password_common(password):
+    if len(password) < 8:
+        raise ValueError('Пароль должен содержать минимум 8 символов')
+    if not re.search(r'[A-Z]', password):
+        raise ValueError('Пароль должен содержать хотя бы одну заглавную букву')
+    if not re.search(r'[a-z]', password):
+        raise ValueError('Пароль должен содержать хотя бы одну строчную букву')
+    if not re.search(r'\d', password):
+        raise ValueError('Пароль должен содержать хотя бы одну цифру')
+    return password
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    
+    @field_validator('password')
+    def validate_password(cls, v):
+        return validate_password_common(v)
+
+class AdminLogin(UserLogin):
+    """Логин администратора имеет те же требования, что и пользовательский логин"""
+    pass

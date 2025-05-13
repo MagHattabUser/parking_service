@@ -5,10 +5,6 @@ from web.schemas import UserCreate, UserResponse
 
 class IUserService(ABC):
     @abstractmethod
-    async def create_user(self, data: UserCreate) -> UserResponse:
-        pass
-
-    @abstractmethod
     async def get_user(self, user_id: int) -> UserResponse:
         pass
 

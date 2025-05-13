@@ -33,7 +33,7 @@ class BookingStatusService(IBookingStatusService):
         updated_booking_status = self.mapper.to_entity(data)
         updated_booking_status.id = booking_status_id
         
-        updated_booking_status = await self.booking_status_repo.save(updated_booking_status)
+        updated_booking_status = await self.booking_status_repo.update(updated_booking_status)
         return self.mapper.to_response(updated_booking_status)
 
     async def delete_booking_status(self, booking_status_id: int) -> None:

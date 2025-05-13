@@ -33,7 +33,7 @@ class CarService(ICarService):
         updated_car = self.mapper.to_entity(data)
         updated_car.id = car_id
         
-        updated_car = await self.car_repo.save(updated_car)
+        updated_car = await self.car_repo.update(updated_car)
         return self.mapper.to_response(updated_car)
 
     async def delete_car(self, car_id: int) -> None:

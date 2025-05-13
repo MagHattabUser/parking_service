@@ -6,7 +6,6 @@ from web.schemas import CarUserCreate, CarUserResponse
 class ICarUserService(ABC):
     @abstractmethod
     async def assign_car(self, data: CarUserCreate) -> CarUserResponse:
-        "Привязать машину к пользователю"
         pass
 
     @abstractmethod

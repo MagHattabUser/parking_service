@@ -5,10 +5,6 @@ from web.schemas import AdminCreate, AdminResponse
 
 class IAdminService(ABC):
     @abstractmethod
-    async def create_admin(self, data: AdminCreate) -> AdminResponse:
-        pass
-
-    @abstractmethod
     async def get_admin(self, admin_id: int) -> AdminResponse:
         pass
 

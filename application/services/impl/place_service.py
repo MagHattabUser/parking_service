@@ -18,8 +18,8 @@ class ParkingPlaceService(IParkingPlaceService):
         places = await self.parking_place_repo.list_by_status(status_id)
         return [self.mapper.to_response(place) for place in places]
 
-    async def get_places_by_zone(self, zona_identifier: str | int):
-        return await self.parking_place_repo.list_by_zone(zona_identifier)
+    async def get_places_by_zone(self, zone_id: int):
+        return await self.parking_place_repo.list_by_zone(zone_id)
 
     async def create_place(self, data: ParkingPlaceCreate) -> ParkingPlaceResponse:
         place = self.mapper.to_entity(data)
@@ -44,7 +44,7 @@ class ParkingPlaceService(IParkingPlaceService):
         updated_place = self.mapper.to_entity(data)
         updated_place.id = place_id
         
-        updated_place = await self.parking_place_repo.save(updated_place)
+        updated_place = await self.parking_place_repo.update(updated_place)
         return self.mapper.to_response(updated_place)
 
     async def delete_place(self, place_id: int) -> None:

@@ -45,7 +45,7 @@ class BookingService(IBookingService):
         updated_booking = self.mapper.to_entity(data)
         updated_booking.id = booking_id
         
-        updated_booking = await self.booking_repo.save(updated_booking)
+        updated_booking = await self.booking_repo.update(updated_booking)
         return self.mapper.to_response(updated_booking)
 
     async def delete_booking(self, booking_id: int) -> None:

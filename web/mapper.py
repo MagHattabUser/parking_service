@@ -3,6 +3,7 @@ from domain.models import (
     PlaceStatus, ZoneType, Admin, ParkingZone,
     Camera, CameraParkingPlace, ParkingPlace, Violation
 )
+from web.security import get_password_hash
 from web.schemas import (
     UserCreate, UserResponse,
     CarCreate, CarResponse,
@@ -26,7 +27,7 @@ class UserMapper:
         return User(
             user_name=dto.user_name,
             phone=dto.phone,
-            password=dto.password,
+            password=get_password_hash(dto.password),  # Хешируем пароль
             email=dto.email
         )
 
@@ -129,7 +130,7 @@ class AdminMapper:
         return Admin(
             admin_name=dto.admin_name,
             email=dto.email,
-            password=dto.password
+            password=get_password_hash(dto.password)
         )
 
     @staticmethod

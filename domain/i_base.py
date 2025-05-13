@@ -17,3 +17,7 @@ class IBase(ABC):
     @abstractmethod
     async def delete(self, instance):
         pass
+
+    @abstractmethod
+    async def update(self, instance):
+        pass

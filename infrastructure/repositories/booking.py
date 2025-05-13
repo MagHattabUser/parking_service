@@ -1,5 +1,4 @@
 from sqlalchemy.future import select
-from sqlalchemy import and_
 from datetime import datetime
 
 from domain.i_booking import IBooking

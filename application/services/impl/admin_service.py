@@ -10,11 +10,6 @@ class AdminService(IAdminService):
         self.admin_repo = admin_repo
         self.mapper = AdminMapper()
 
-    async def create_admin(self, data: AdminCreate) -> AdminResponse:
-        admin = self.mapper.to_entity(data)
-        created_admin = await self.admin_repo.save(admin)
-        return self.mapper.to_response(created_admin)
-
     async def get_admin(self, admin_id: int) -> AdminResponse:
         admin = await self.admin_repo.get_by_id(Admin, admin_id)
         if not admin:
@@ -33,7 +28,7 @@ class AdminService(IAdminService):
         updated_admin = self.mapper.to_entity(data)
         updated_admin.id = admin_id
         
-        updated_admin = await self.admin_repo.save(updated_admin)
+        updated_admin = await self.admin_repo.update(updated_admin)
         return self.mapper.to_response(updated_admin)
 
     async def delete_admin(self, admin_id: int) -> None:

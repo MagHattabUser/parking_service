@@ -29,4 +29,25 @@ async def update_car_user(id: int, data: CarUserCreate, service: ICarUserService
 @router.delete("/{id}")
 async def delete_car_user(id: int, service: ICarUserService = Depends(get_car_user_service)):
     await service.delete_car_user(id)
-    return {"message": "Car-User connection deleted successfully"} 
+    return {"message": "Car-User connection deleted successfully"}
+
+@router.post("/assign", response_model=CarUserResponse, summary="Привязка автомобиля к пользователю")
+async def assign_car(data: CarUserCreate, service: ICarUserService = Depends(get_car_user_service)):
+    """Привязывает автомобиль к пользователю"""
+    return await service.assign_car(data)
+
+@router.delete("/unassign/{car_user_id}", summary="Отвязка автомобиля от пользователя")
+async def unassign_car(car_user_id: int, service: ICarUserService = Depends(get_car_user_service)):
+    """Отвязывает автомобиль от пользователя"""
+    await service.unassign_car(car_user_id)
+    return {"message": "Car unassigned from user successfully"}
+
+@router.get("/user/{user_id}", response_model=List[CarUserResponse], summary="Машины пользователя")
+async def list_by_user(user_id: int, service: ICarUserService = Depends(get_car_user_service)):
+    """Получает все машины, привязанные к конкретному пользователю"""
+    return await service.list_by_user(user_id)
+
+@router.get("/car/{car_id}", response_model=List[CarUserResponse], summary="Пользователи машины")
+async def list_by_car(car_id: int, service: ICarUserService = Depends(get_car_user_service)):
+    """Получает всех пользователей, привязанных к конкретной машине"""
+    return await service.list_by_car(car_id)

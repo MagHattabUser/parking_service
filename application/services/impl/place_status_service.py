@@ -33,7 +33,7 @@ class PlaceStatusService(IPlaceStatusService):
         updated_place_status = self.mapper.to_entity(data)
         updated_place_status.id = place_status_id
         
-        updated_place_status = await self.place_status_repo.save(updated_place_status)
+        updated_place_status = await self.place_status_repo.update(updated_place_status)
         return self.mapper.to_response(updated_place_status)
 
     async def delete_place_status(self, place_status_id: int) -> None:

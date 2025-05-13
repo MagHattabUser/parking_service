@@ -56,7 +56,7 @@ class CameraParkingPlaceService(ICameraParkingPlaceService):
         updated_camera_parking_place = self.mapper.to_entity(data)
         updated_camera_parking_place.id = camera_parking_place_id
         
-        updated_camera_parking_place = await self.camera_parking_place_repo.save(updated_camera_parking_place)
+        updated_camera_parking_place = await self.camera_parking_place_repo.update(updated_camera_parking_place)
         return self.mapper.to_response(updated_camera_parking_place)
 
     async def delete_camera_parking_place(self, camera_parking_place_id: int) -> None:
