@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from domain.models import Base
 
 
-DATABASE_URL = "postgresql+asyncpg://admin:secret@localhost:5432/mydb"
+DATABASE_URL = "postgresql+asyncpg://postgres:admin@db:5432/parking"
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
