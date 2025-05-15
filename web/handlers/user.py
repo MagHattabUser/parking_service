@@ -31,7 +31,6 @@ async def delete_user(user_id: int, service: IUserService = Depends(get_user_ser
 
 @router.get("/me/profile", response_model=UserResponse)
 async def get_current_user_profile(current_user: Annotated[UserModel, Depends(get_current_user)]):
-    """Get the profile of the currently authenticated user."""
     return current_user
 
 @router.put("/me/profile", response_model=UserResponse)
@@ -40,5 +39,4 @@ async def update_current_user_profile(
     current_user: Annotated[UserModel, Depends(get_current_user)],
     service: IUserService = Depends(get_user_service)
 ):
-    """Update the profile of the currently authenticated user."""
     return await service.update_user(current_user.id, data)

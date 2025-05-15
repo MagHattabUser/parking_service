@@ -6,5 +6,4 @@ from abc import abstractmethod
 class ICamera(IBase):
     @abstractmethod
     async def list_by_zone(self, zone_id: int) -> List[Camera]:
-        """Все камеры, установленные в определённой зоне"""
         pass

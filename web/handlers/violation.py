@@ -34,10 +34,8 @@ async def delete_violation(violation_id: int, service: IViolationService = Depen
 
 @router.get("/place/{place_id}", response_model=List[ViolationResponse], summary="Нарушения по парковочному месту")
 async def get_violations_by_place(place_id: int, service: IViolationService = Depends(get_violation_service)):
-    """Возвращает все нарушения на конкретном парковочном месте"""
     return await service.list_by_place(place_id)
 
 @router.get("/date-range/", response_model=List[ViolationResponse], summary="Нарушения за период")
 async def get_violations_by_date_range(start_date: datetime, end_date: datetime, service: IViolationService = Depends(get_violation_service)):
-    """Возвращает все нарушения за указанный период времени"""
     return await service.list_by_date_range(start_date, end_date)

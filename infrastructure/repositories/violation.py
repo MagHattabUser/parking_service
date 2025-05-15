@@ -7,13 +7,11 @@ from domain.models import Violation
 
 class ViolationRepository(BaseRepository, IViolation):
     async def list_by_place(self, place_id: int):
-        """Все Violation для конкретного места"""
         async with self.db.get_session() as session:
             result = await session.execute(select(Violation).where(Violation.parking_place_id == place_id))
         return result.scalars().all()
 
     async def list_by_date_range(self, start: datetime, end: datetime):
-        """Violation по диапазону дат"""
         async with self.db.get_session() as session:
             result = await session.execute(select(Violation).where(Violation.timestamp.between(start, end)))
         return result.scalars().all()

@@ -25,7 +25,6 @@ class UserService(IUserService):
         if not user:
             raise ValueError(f"User with id {user_id} not found")
         
-        # Маппер уже содержит логику хеширования пароля
         updated_user = self.mapper.to_entity(data)
         updated_user.id = user_id
         

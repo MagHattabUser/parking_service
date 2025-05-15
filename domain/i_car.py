@@ -6,5 +6,4 @@ from abc import abstractmethod
 class ICar(IBase):
     @abstractmethod
     async def get_by_number(self, car_number: str) -> Optional[Car]:
-        """Идентификация машины по её номеру"""
         pass

@@ -11,68 +11,49 @@ from web.container import get_container
 from application.services.interfaces.i_unified_auth_service import IUnifiedAuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-# Определяем OAuth2 схемы для разных ролей
 oauth2_scheme_admin = OAuth2PasswordBearer(tokenUrl="auth/token/admin")
 oauth2_scheme_user = OAuth2PasswordBearer(tokenUrl="auth/token/user")
-oauth2_scheme = oauth2_scheme_admin  # для обратной совместимости
+oauth2_scheme = oauth2_scheme_admin
 
 
 async def get_current_user_or_admin(
     token: Annotated[str, Depends(oauth2_scheme)],
     required_role: Optional[str] = None
 ) -> Union[User, Admin]:
-    """Получение текущего аутентифицированного пользователя или администратора"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Не удалось подтвердить учетные данные",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    # Проверяем токен
     token_data = verify_token(token)
     if token_data is None:
         raise credentials_exception
         
-    # Проверяем роль, если требуется
     if required_role and token_data.role != required_role:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Недостаточно прав для доступа"
         )
 
-    # Получаем сервис аутентификации из контейнера
     container = get_container()
     auth_service = container.resolve(IUnifiedAuthService)
     
-    # Получаем субъект по email и роли
     subject = await auth_service.get_by_email(token_data.email, token_data.role)
     if subject is None:
         raise credentials_exception
     return subject
 
 
-# Создаем дедицированные асинхронные функции-зависимости для получения конкретной роли
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_user)]) -> User:
-    """Получение текущего аутентифицированного пользователя"""
     return await get_current_user_or_admin(token, required_role="user")
 
 async def get_current_admin(token: Annotated[str, Depends(oauth2_scheme_admin)]) -> Admin:
-    """Получение текущего аутентифицированного администратора"""
     return await get_current_user_or_admin(token, required_role="admin")
 
 
 @router.post("/register/user", response_model=UserSchema, summary="Регистрация пользователя")
 async def register_user(user_data: UserCreate):
-    """
-    Регистрация нового пользователя в системе.
-    
-    - **user_name**: имя пользователя
-    - **email**: email пользователя (должен быть уникальным)
-    - **phone**: телефон пользователя (должен быть уникальным)
-    - **password**: пароль пользователя
-    
-    Возвращает данные созданного пользователя.
-    """
     container = get_container()
     auth_service = container.resolve(IUnifiedAuthService)
     
@@ -87,15 +68,6 @@ async def register_user(user_data: UserCreate):
 
 @router.post("/register/admin", response_model=AdminSchema, summary="Регистрация администратора")
 async def register_admin(admin_data: AdminCreate):
-    """
-    Регистрация нового администратора в системе.
-    
-    - **admin_name**: имя администратора
-    - **email**: email администратора (должен быть уникальным)
-    - **password**: пароль администратора
-    
-    Возвращает данные созданного администратора.
-    """
     container = get_container()
     auth_service = container.resolve(IUnifiedAuthService)
     
@@ -110,20 +82,10 @@ async def register_admin(admin_data: AdminCreate):
 
 @router.post("/token/user", response_model=Token, summary="Получение токена доступа пользователя")
 async def login_user(login_data: UserLogin):
-    """
-    Аутентифицирует пользователя и создает JWT токен доступа.
-
-    - **email**: email пользователя
-    - **password**: пароль (минимум 8 символов, содержит заглавные, строчные буквы и цифры)
-
-    Возвращает токен доступа для использования в защищенных эндпоинтах.
-    """
     try:
-        # Получаем сервис аутентификации из контейнера
         container = get_container()
         auth_service = container.resolve(IUnifiedAuthService)
 
-        # Аутентифицируем пользователя
         subject = await auth_service.authenticate(login_data.email, login_data.password, "user")
         if not subject:
             raise HTTPException(
@@ -132,7 +94,6 @@ async def login_user(login_data: UserLogin):
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # Создаем токен с помощью сервиса
         token = await auth_service.create_token(subject, "user")
         return token
     except ValueError as e:
@@ -143,21 +104,10 @@ async def login_user(login_data: UserLogin):
 
 @router.post("/token/admin", response_model=Token, summary="Получение токена доступа администратора")
 async def login_admin(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    """
-    Аутентифицирует администратора и создает JWT токен доступа.
-    
-    - **username**: email администратора (для OAuth2 используется поле username)
-    - **password**: пароль (минимум 8 символов, содержит заглавные, строчные буквы и цифры)
-    
-    Возвращает токен доступа для использования в защищенных эндпоинтах.
-    """
     try:
-        # Получаем сервис аутентификации из контейнера
         container = get_container()
         auth_service = container.resolve(IUnifiedAuthService)
         
-        # Аутентифицируем администратора
-        # В OAuth2PasswordRequestForm поле для email называется "username"
         subject = await auth_service.authenticate(form_data.username, form_data.password, "admin")
         if not subject:
             raise HTTPException(
@@ -166,7 +116,6 @@ async def login_admin(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # Создаем токен с помощью сервиса
         token = await auth_service.create_token(subject, "admin")
         return token
     except ValueError as e:
@@ -175,67 +124,18 @@ async def login_admin(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
             detail=str(e)
         )
 
-# # Оставляем старый эндпоинт для обратной совместимости
-# @router.post("/token", response_model=Token, summary="Получение токена доступа (устаревший)")
-# async def login_deprecated(
-#     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-#     role: str = Query("user", description="Роль для аутентификации: user или admin")
-# ):
-#     """
-#     Устаревший метод аутентификации. Рекомендуется использовать новые эндпоинты /token/user или /token/admin.
-#     """
-#     # Проверяем валидность роли
-#     if role not in ["user", "admin"]:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Недопустимая роль. Используйте 'user' или 'admin'"
-#         )
-#
-#     # Получаем сервис аутентификации из контейнера
-#     container = get_container()
-#     auth_service = container.resolve(IUnifiedAuthService)
-#
-#     # Аутентифицируем субъекта
-#     subject = await auth_service.authenticate(form_data.username, form_data.password, role)
-#     if not subject:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Неверный email или пароль",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
-#
-#     # Создаем токен с помощью сервиса
-#     token = await auth_service.create_token(subject, role)
-#     return token
-
-
 @router.get("/me", response_model=Union[UserSchema, AdminSchema], summary="Получение информации о текущем пользователе")
 async def read_current_profile(current_subject: Annotated[Union[User, Admin], Depends(get_current_user_or_admin)]):
-    """
-    Возвращает информацию о текущем аутентифицированном пользователе или администраторе.
-    
-    Требует действительный токен доступа.
-    """
     return current_subject
 
 
 @router.get("/user/me", response_model=UserSchema, summary="Получение информации о пользователе")
 async def read_user_me(current_user: Annotated[User, Depends(get_current_user)]):
-    """
-    Возвращает информацию о текущем аутентифицированном пользователе.
-    
-    Требует действительный токен доступа пользователя.
-    """
     return current_user
 
 
 @router.get("/admin/me", response_model=AdminSchema, summary="Получение информации об администраторе")
 async def read_admin_me(current_admin: Annotated[Admin, Depends(get_current_admin)]):
-    """
-    Возвращает информацию о текущем аутентифицированном администраторе.
-    
-    Требует действительный токен доступа администратора.
-    """
     return current_admin
 
 
@@ -245,12 +145,6 @@ async def logout(
     response: Response,
     token: Annotated[str, Depends(oauth2_scheme)]
 ):
-    """
-    Выход из системы (инвалидация refresh токена).
-    
-    Требует действительный токен доступа.
-    """
-    # Получаем роль из токена
     payload = verify_token(token, return_payload=True)
     role = payload.get("role", "user")
     
@@ -259,7 +153,6 @@ async def logout(
     
     await auth_service.logout(current_subject.id, role)
     
-    # Для полного выхода рекомендуется удалить cookie
     response.delete_cookie(key="access_token")
     return None
 
@@ -272,16 +165,6 @@ class RefreshTokenRequest(BaseModel):
 
 @router.post("/refresh", response_model=Token, summary="Обновление access токена")
 async def refresh_token(refresh_data: RefreshTokenRequest):
-    """
-    Обновление access токена с помощью refresh токена.
-    
-    - **refresh_token**: токен обновления, полученный при авторизации
-    - **subject_id**: идентификатор пользователя или администратора
-    - **role**: роль (user или admin)
-    
-    Возвращает новый JWT токен и новый refresh токен.
-    """
-    # Проверяем валидность роли
     if refresh_data.role not in ["user", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -291,7 +174,6 @@ async def refresh_token(refresh_data: RefreshTokenRequest):
     container = get_container()
     auth_service = container.resolve(IUnifiedAuthService)
     
-    # Обновляем токен доступа
     new_token = await auth_service.refresh_access_token(
         refresh_data.subject_id, refresh_data.role, refresh_data.refresh_token
     )

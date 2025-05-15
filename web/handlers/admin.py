@@ -31,7 +31,6 @@ async def delete_admin(admin_id: int, service: IAdminService = Depends(get_admin
 
 @router.get("/me/profile", response_model=AdminResponse)
 async def get_current_admin_profile(current_admin: Annotated[AdminModel, Depends(get_current_admin)]):
-    """Get the profile of the currently authenticated administrator."""
     return current_admin
 
 @router.put("/me/profile", response_model=AdminResponse)
@@ -40,5 +39,4 @@ async def update_current_admin_profile(
     current_admin: Annotated[AdminModel, Depends(get_current_admin)],
     service: IAdminService = Depends(get_admin_service)
 ):
-    """Update the profile of the currently authenticated administrator."""
     return await service.update_admin(current_admin.id, data)

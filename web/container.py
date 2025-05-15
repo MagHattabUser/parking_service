@@ -2,9 +2,8 @@ from functools import lru_cache
 
 import punq
 
-# Инфраструктурный слой
 from infrastructure.database import Database
-# Репозитории
+
 from infrastructure.repositories.parking_zone import ParkingZoneRepository
 from infrastructure.repositories.parking_place import ParkingPlaceRepository
 from infrastructure.repositories.admin import AdminRepository
@@ -18,10 +17,8 @@ from infrastructure.repositories.place_status import PlaceStatusRepository
 from infrastructure.repositories.user import UserRepository
 from infrastructure.repositories.violation import ViolationRepository
 from infrastructure.repositories.zone_type import ZoneTypeRepository
-# Старые репозитории удалены, используем только унифицированный
 from infrastructure.repositories.unified_auth import UnifiedAuthRepository
 
-# Доменный слой - интерфейсы репозиториев
 from domain.i_parking_place import IParkingPlace
 from domain.i_parking_zone import IParkingZone
 from domain.i_admin import IAdmin
@@ -35,10 +32,8 @@ from domain.i_place_status import IPlaceStatus
 from domain.i_user import IUser
 from domain.i_violation import IViolation
 from domain.i_zone_type import IZoneType
-# Старые интерфейсы удалены, используем только унифицированный
 from domain.i_unified_auth import IUnifiedAuth
 
-# Слой приложения - интерфейсы сервисов
 from application.services.interfaces.i_parking_place_service import IParkingPlaceService
 from application.services.interfaces.i_parking_zone_service import IParkingZoneService
 from application.services.interfaces.i_admin_service import IAdminService
@@ -52,10 +47,8 @@ from application.services.interfaces.i_place_status_service import IPlaceStatusS
 from application.services.interfaces.i_user_service import IUserService
 from application.services.interfaces.i_violation_service import IViolationService
 from application.services.interfaces.i_zone_type_service import IZoneTypeService
-# Старые интерфейсы сервисов удалены, используем только унифицированный
 from application.services.interfaces.i_unified_auth_service import IUnifiedAuthService
 
-# Слой приложения - реализации сервисов
 from application.services.impl.zone_service import ParkingZoneService
 from application.services.impl.place_service import ParkingPlaceService
 from application.services.impl.admin_service import AdminService
@@ -69,10 +62,8 @@ from application.services.impl.place_status_service import PlaceStatusService
 from application.services.impl.user_service import UserService
 from application.services.impl.violation_service import ViolationService
 from application.services.impl.zone_type_service import ZoneTypeService
-# Старые сервисы удалены, используем только унифицированный
 from application.services.impl.unified_auth_service import UnifiedAuthService
 
-# Слой веб - конфигурация
 from web.config import Configs
 
 
@@ -83,14 +74,12 @@ def get_container() -> punq.Container:
 def _init_container() -> punq.Container:
     container = punq.Container()
 
-    # Регистрация конфигурации
     container.register(
         Configs,
         scope=punq.Scope.singleton,
         instance=Configs()
     )
     
-    # Инициализация базы данных
     configs: Configs = container.resolve(Configs)
     container.register(
         Database,
@@ -100,21 +89,12 @@ def _init_container() -> punq.Container:
         ),
     )
 
-    # ==========================================
-    # СЛОЙ ИНФРАСТРУКТУРЫ - РЕГИСТРАЦИЯ РЕПОЗИТОРИЕВ
-    # ==========================================
-    _register_repositories(container)
-    
-    # ==========================================
-    # СЛОЙ ПРИЛОЖЕНИЯ - РЕГИСТРАЦИЯ СЕРВИСОВ
-    # ==========================================
     _register_services(container)
 
     return container
 
 
 def _register_repositories(container: punq.Container) -> None:
-    """Регистрация репозиториев в контейнере"""
     db = container.resolve(Database)
     
     container.register(IParkingZone, factory=lambda: ParkingZoneRepository(db))
@@ -130,13 +110,10 @@ def _register_repositories(container: punq.Container) -> None:
     container.register(IUser, factory=lambda: UserRepository(db))
     container.register(IViolation, factory=lambda: ViolationRepository(db))
     container.register(IZoneType, factory=lambda: ZoneTypeRepository(db))
-    # Старые репозитории удалены, используем только унифицированный
     container.register(IUnifiedAuth, factory=lambda: UnifiedAuthRepository(db))
 
 
 def _register_services(container: punq.Container) -> None:
-    """Регистрация сервисов в контейнере"""
-    # Сервисы основных функций
     container.register(IParkingZoneService, factory=lambda: ParkingZoneService(container.resolve(IParkingZone)))
     container.register(IParkingPlaceService, factory=lambda: ParkingPlaceService(container.resolve(IParkingPlace)))
     container.register(IAdminService, factory=lambda: AdminService(container.resolve(IAdmin)))
@@ -151,7 +128,6 @@ def _register_services(container: punq.Container) -> None:
     container.register(IViolationService, factory=lambda: ViolationService(container.resolve(IViolation)))
     container.register(IZoneTypeService, factory=lambda: ZoneTypeService(container.resolve(IZoneType)))
     
-    # Единый унифицированный сервис аутентификации
     container.register(IUnifiedAuthService, factory=lambda: UnifiedAuthService(
         container.resolve(IUnifiedAuth), 
         container.resolve(IUser), 

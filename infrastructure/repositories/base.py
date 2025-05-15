@@ -16,7 +16,6 @@ class BaseRepository(IBase):
         return result.scalars().first()
 
     async def get_by_all(self, model):
-        """Получение всех записей модели"""
         async with self.db.get_session() as session:
             result = await session.execute(select(model))
         return result.scalars().all()
@@ -29,7 +28,6 @@ class BaseRepository(IBase):
         return instance
 
     async def update(self, instance):
-        """Обновление существующей записи"""
         async with self.db.get_session() as session:
             merged_instance = await session.merge(instance)
             await session.commit()

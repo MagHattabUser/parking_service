@@ -33,14 +33,8 @@ async def delete_camera_parking_place(id: int, service: ICameraParkingPlaceServi
 
 @router.get("/camera/{camera_id}", response_model=List[CameraParkingPlaceResponse])
 async def list_places_for_camera(camera_id: int, service: ICameraParkingPlaceService = Depends(get_camera_parking_place_service)):
-    """
-    Получить все парковочные места, связанные с определенной камерой.
-    """
     return await service.list_places_for_camera(camera_id)
 
 @router.get("/place/{place_id}", response_model=List[CameraParkingPlaceResponse])
 async def list_cameras_for_place(place_id: int, service: ICameraParkingPlaceService = Depends(get_camera_parking_place_service)):
-    """
-    Получить все камеры, связанные с определенным парковочным местом.
-    """
     return await service.list_cameras_for_place(place_id)

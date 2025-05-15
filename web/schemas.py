@@ -3,7 +3,6 @@ from typing import List, Optional, Any
 from datetime import datetime, time
 import re
 
-# User
 class UserBase(BaseModel):
     user_name: str
     phone: str
@@ -30,7 +29,7 @@ class UserResponse(UserBase):
     class Config:
         orm_mode = True
 
-# Token
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -38,8 +37,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: str | None = None
-    role: str | None = None    # "user" или "admin"
-    subject_id: int | None = None  # ID пользователя или администратора
+    role: str | None = None
+    subject_id: int | None = None
 
 class User(UserBase):
     id: int
@@ -47,7 +46,6 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
-# Car
 class CarBase(BaseModel):
     car_number: str
 
@@ -60,7 +58,6 @@ class CarResponse(CarBase):
     class Config:
         orm_mode = True
 
-# CarUser (association)
 class CarUserBase(BaseModel):
     user_id: int
     car_id: int
@@ -74,7 +71,6 @@ class CarUserResponse(CarUserBase):
     class Config:
         orm_mode = True
 
-# BookingStatus
 class BookingStatusBase(BaseModel):
     status_name: str
 
@@ -87,7 +83,6 @@ class BookingStatusResponse(BookingStatusBase):
     class Config:
         orm_mode = True
 
-# PlaceStatus
 class PlaceStatusBase(BaseModel):
     status_name: str
 
@@ -100,7 +95,6 @@ class PlaceStatusResponse(PlaceStatusBase):
     class Config:
         orm_mode = True
 
-# ZoneType
 class ZoneTypeBase(BaseModel):
     type_name: str
 
@@ -113,7 +107,6 @@ class ZoneTypeResponse(ZoneTypeBase):
     class Config:
         orm_mode = True
 
-# Admin
 class AdminBase(BaseModel):
     admin_name: str
     email: EmailStr
@@ -145,7 +138,6 @@ class Admin(AdminBase):
     class Config:
         from_attributes = True
 
-# ParkingZone
 type Coordinates = List[List[float]]
 class ParkingZoneBase(BaseModel):
     zone_name: str
@@ -167,7 +159,6 @@ class ParkingZoneResponse(ParkingZoneBase):
     class Config:
         orm_mode = True
 
-# Camera
 class CameraBase(BaseModel):
     camera_name: str
     url: str
@@ -182,7 +173,6 @@ class CameraResponse(CameraBase):
     class Config:
         orm_mode = True
 
-# CameraParkingPlace
 type JSONCoords = Any
 class CameraParkingPlaceBase(BaseModel):
     camera_id: int
@@ -198,7 +188,6 @@ class CameraParkingPlaceResponse(CameraParkingPlaceBase):
     class Config:
         orm_mode = True
 
-# ParkingPlace
 class ParkingPlaceBase(BaseModel):
     place_number: int
     place_status_id: int
@@ -213,7 +202,6 @@ class ParkingPlaceResponse(ParkingPlaceBase):
     class Config:
         orm_mode = True
 
-# Booking
 class BookingBase(BaseModel):
     car_user_id: int
     start_time: datetime
@@ -230,7 +218,6 @@ class BookingResponse(BookingBase):
     class Config:
         orm_mode = True
 
-# Violation
 class ViolationBase(BaseModel):
     car_number: str
     timestamp: datetime
@@ -245,8 +232,6 @@ class ViolationResponse(ViolationBase):
     class Config:
         orm_mode = True
 
-# Схемы для авторизации
-# Базовый валидатор пароля
 def validate_password_common(password):
     if len(password) < 8:
         raise ValueError('Пароль должен содержать минимум 8 символов')
@@ -267,5 +252,4 @@ class UserLogin(BaseModel):
         return validate_password_common(v)
 
 class AdminLogin(UserLogin):
-    """Логин администратора имеет те же требования, что и пользовательский логин"""
     pass

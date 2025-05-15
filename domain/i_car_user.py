@@ -6,10 +6,8 @@ from abc import abstractmethod
 class ICarUser(IBase):
     @abstractmethod
     async def list_by_user(self, user_id: int) -> List[CarUser]:
-        """Все машины, привязанные к конкретному пользователю"""
         pass
 
     @abstractmethod
     async def list_by_car(self, car_id: int) -> List[CarUser]:
-        """Список пользователей, связанных с данной машиной"""
         pass
