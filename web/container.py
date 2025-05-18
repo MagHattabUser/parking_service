@@ -89,6 +89,7 @@ def _init_container() -> punq.Container:
         ),
     )
 
+    _register_repositories(container)
     _register_services(container)
 
     return container
@@ -117,7 +118,10 @@ def _register_services(container: punq.Container) -> None:
     container.register(IParkingZoneService, factory=lambda: ParkingZoneService(container.resolve(IParkingZone)))
     container.register(IParkingPlaceService, factory=lambda: ParkingPlaceService(container.resolve(IParkingPlace)))
     container.register(IAdminService, factory=lambda: AdminService(container.resolve(IAdmin)))
-    container.register(IBookingService, factory=lambda: BookingService(container.resolve(IBooking)))
+    container.register(IBookingService, factory=lambda: BookingService(
+        container.resolve(IBooking),
+        container.resolve(IParkingPlaceService)
+    ))
     container.register(IBookingStatusService, factory=lambda: BookingStatusService(container.resolve(IBookingStatus)))
     container.register(ICarService, factory=lambda: CarService(container.resolve(ICar)))
     container.register(ICarUserService, factory=lambda: CarUserService(container.resolve(ICarUser)))

@@ -18,7 +18,7 @@ def get_zone_type_service() -> IZoneTypeService:
 @router.post("/", response_model=ZoneTypeResponse)
 async def create_zone_type(
     data: ZoneTypeCreate, 
-    current_user: Annotated[User, Depends(get_current_user)],
+    #current_user: Annotated[User, Depends(get_current_user)],
     service: IZoneTypeService = Depends(get_zone_type_service)
 ):
     try:
@@ -29,7 +29,7 @@ async def create_zone_type(
 
 @router.get("/", response_model=List[ZoneTypeResponse])
 async def list_all_types(
-    current_user: Annotated[User, Depends(get_current_user)],
+    #current_user: Annotated[User, Depends(get_current_user)],
     service: IZoneTypeService = Depends(get_zone_type_service)
 ):
     return await service.list_all_types()
@@ -38,7 +38,7 @@ async def list_all_types(
 @router.get("/{zone_type_id}", response_model=ZoneTypeResponse)
 async def get_zone_type(
     zone_type_id: int, 
-    current_user: Annotated[User, Depends(get_current_user)],
+    #current_user: Annotated[User, Depends(get_current_user)],
     service: IZoneTypeService = Depends(get_zone_type_service)
 ):
     try:
@@ -51,7 +51,7 @@ async def get_zone_type(
 async def update_zone_type(
     zone_type_id: int, 
     data: ZoneTypeCreate, 
-    current_user: Annotated[User, Depends(get_current_user)],
+    #current_user: Annotated[User, Depends(get_current_user)],
     service: IZoneTypeService = Depends(get_zone_type_service)
 ):
     try:
@@ -63,7 +63,7 @@ async def update_zone_type(
 @router.delete("/{zone_type_id}")
 async def delete_zone_type(
     zone_type_id: int, 
-    current_admin: Annotated[User, Depends(get_current_admin)],
+    #current_admin: Annotated[User, Depends(get_current_admin)],
     service: IZoneTypeService = Depends(get_zone_type_service)
 ):
     try:

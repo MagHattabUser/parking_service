@@ -1,5 +1,5 @@
 from typing import List, Union
-from web.schemas import ParkingZoneCreate, ParkingZoneResponse
+from web.schemas import ParkingZoneCreate, ParkingZoneResponse, ParkingZoneDetailedResponse
 from application.services.interfaces.i_parking_zone_service import IParkingZoneService
 from infrastructure.repositories.parking_zone import ParkingZoneRepository
 from fastapi import HTTPException
@@ -50,3 +50,29 @@ class ParkingZoneService(IParkingZoneService):
         if not zone:
             raise ValueError(f"Parking zone with id {zone_id} not found")
         await self.parking_zone_repo.delete(zone)
+
+    async def get_zones_by_admin(self, admin_id: int) -> List[ParkingZoneResponse]:
+        zones = await self.parking_zone_repo.list_by_admin(admin_id)
+        return [self.mapper.to_response(zone) for zone in zones]
+
+    async def get_zone_detailed(self, zone_id: int) -> ParkingZoneDetailedResponse:
+        result = await self.parking_zone_repo.get_zone_detailed(zone_id)
+        if not result:
+            raise ValueError(f"Parking zone with id {zone_id} not found")
+            
+        zone, zone_type, total_places, free_places, occupied_places, total_cameras = result
+        
+        return ParkingZoneDetailedResponse(
+            id=zone.id,
+            zone_name=zone.zone_name,
+            type_name=zone_type.type_name,
+            address=zone.address,
+            start_time=zone.start_time,
+            end_time=zone.end_time,
+            price_per_minute=zone.price_per_minute,
+            location=zone.location,
+            total_places=total_places,
+            free_places=free_places,
+            occupied_places=occupied_places,
+            total_cameras=total_cameras
+        )

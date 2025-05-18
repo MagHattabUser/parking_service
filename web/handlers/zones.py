@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 
-from web.schemas import ParkingZoneCreate, ParkingZoneResponse
+from web.schemas import ParkingZoneCreate, ParkingZoneResponse, ParkingZoneDetailedResponse
 from application.services.interfaces.i_parking_zone_service import IParkingZoneService
 from web.container import get_container
 
@@ -44,6 +44,20 @@ async def delete_zone(zone_id: int, service: IParkingZoneService = Depends(get_z
     try:
         await service.delete_zone(zone_id)
         return {"message": "Zone deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/admin/{admin_id}", response_model=List[ParkingZoneResponse], summary="Get Zones By Admin")
+async def get_zones_by_admin(admin_id: int, service: IParkingZoneService = Depends(get_zone_service)):
+    try:
+        return await service.get_zones_by_admin(admin_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/{zone_id}/detailed", response_model=ParkingZoneDetailedResponse, summary="Get Zone Detailed Information")
+async def get_zone_detailed(zone_id: int, service: IParkingZoneService = Depends(get_zone_service)):
+    try:
+        return await service.get_zone_detailed(zone_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

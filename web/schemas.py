@@ -159,6 +159,23 @@ class ParkingZoneResponse(ParkingZoneBase):
     class Config:
         orm_mode = True
 
+class ParkingZoneDetailedResponse(BaseModel):
+    id: int
+    zone_name: str
+    type_name: str
+    address: str
+    start_time: time
+    end_time: time
+    price_per_minute: int
+    location: Any
+    total_places: int
+    free_places: int
+    occupied_places: int
+    total_cameras: int
+
+    class Config:
+        orm_mode = True
+
 class CameraBase(BaseModel):
     camera_name: str
     url: str

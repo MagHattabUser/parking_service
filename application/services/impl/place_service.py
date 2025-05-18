@@ -11,7 +11,7 @@ class ParkingPlaceService(IParkingPlaceService):
         self.mapper = ParkingPlaceMapper()
 
     async def list_by_zone(self, zone_id: int) -> List[ParkingPlaceResponse]:
-        places = await self.parking_place_repo.get_by_all(zone_id)
+        places = await self.parking_place_repo.list_by_zone(zone_id)
         return [self.mapper.to_response(place) for place in places]
 
     async def list_by_status(self, status_id: int) -> List[ParkingPlaceResponse]:

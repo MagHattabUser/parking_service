@@ -15,7 +15,7 @@ class User(Base):
     password = Column(String, nullable=False)
     email = Column(String, nullable=False)
 
-    car_users = relationship("CarUser", back_populates="user")
+    car_users = relationship("CarUser", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
 
 
@@ -25,7 +25,7 @@ class Car(Base):
     id = Column(Integer, primary_key=True, index=True)
     car_number = Column(String, nullable=False)
 
-    car_users = relationship("CarUser", back_populates="car")
+    car_users = relationship("CarUser", back_populates="car", cascade="all, delete-orphan")
 
 
 class CarUser(Base):
@@ -37,7 +37,7 @@ class CarUser(Base):
 
     user = relationship("User", back_populates="car_users")
     car = relationship("Car", back_populates="car_users")
-    bookings = relationship("Booking", back_populates="car_user")
+    bookings = relationship("Booking", back_populates="car_user", cascade="all, delete-orphan")
 
 
 class BookingStatus(Base):
@@ -46,7 +46,7 @@ class BookingStatus(Base):
     id = Column(Integer, primary_key=True, index=True)
     status_name = Column(String, nullable=False)
 
-    bookings = relationship("Booking", back_populates="status")
+    bookings = relationship("Booking", back_populates="status", cascade="all, delete-orphan")
 
 
 class Booking(Base):
@@ -70,7 +70,7 @@ class PlaceStatus(Base):
     id = Column(Integer, primary_key=True, index=True)
     status_name = Column(String, nullable=False)
 
-    parking_places = relationship("ParkingPlace", back_populates="status")
+    parking_places = relationship("ParkingPlace", back_populates="status", cascade="all, delete-orphan")
 
 
 class ZoneType(Base):
@@ -79,7 +79,7 @@ class ZoneType(Base):
     id = Column(Integer, primary_key=True, index=True)
     type_name = Column(String, nullable=False)
 
-    parking_zones = relationship("ParkingZone", back_populates="zone_type")
+    parking_zones = relationship("ParkingZone", back_populates="zone_type", cascade="all, delete-orphan")
 
 
 class Admin(Base):
@@ -90,7 +90,7 @@ class Admin(Base):
     password = Column(String, nullable=False)
     email = Column(String, nullable=False)
 
-    parking_zones = relationship("ParkingZone", back_populates="admin")
+    parking_zones = relationship("ParkingZone", back_populates="admin", cascade="all, delete-orphan")
     refresh_tokens = relationship("AdminRefreshToken", back_populates="admin", cascade="all, delete-orphan")
 
 
@@ -110,8 +110,8 @@ class ParkingZone(Base):
 
     zone_type = relationship("ZoneType", back_populates="parking_zones")
     admin = relationship("Admin", back_populates="parking_zones")
-    cameras = relationship("Camera", back_populates="parking_zone")
-    parking_places = relationship("ParkingPlace", back_populates="parking_zone")
+    cameras = relationship("Camera", back_populates="parking_zone", cascade="all, delete-orphan")
+    parking_places = relationship("ParkingPlace", back_populates="parking_zone", cascade="all, delete-orphan")
 
 
 class Camera(Base):
@@ -123,7 +123,7 @@ class Camera(Base):
     parking_zone_id = Column(Integer, ForeignKey("parking_zones.id"), nullable=False)
 
     parking_zone = relationship("ParkingZone", back_populates="cameras")
-    camera_places = relationship("CameraParkingPlace", back_populates="camera")
+    camera_places = relationship("CameraParkingPlace", back_populates="camera", cascade="all, delete-orphan")
 
 
 class CameraParkingPlace(Base):
@@ -148,9 +148,9 @@ class ParkingPlace(Base):
 
     status = relationship("PlaceStatus", back_populates="parking_places")
     parking_zone = relationship("ParkingZone", back_populates="parking_places")
-    camera_places = relationship("CameraParkingPlace", back_populates="parking_place")
-    bookings = relationship("Booking", back_populates="parking_place")
-    violations = relationship("Violation", back_populates="parking_place")
+    camera_places = relationship("CameraParkingPlace", back_populates="parking_place", cascade="all, delete-orphan")
+    bookings = relationship("Booking", back_populates="parking_place", cascade="all, delete-orphan")
+    violations = relationship("Violation", back_populates="parking_place", cascade="all, delete-orphan")
 
 
 class Violation(Base):
