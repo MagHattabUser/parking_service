@@ -1,5 +1,5 @@
 from typing import List
-from web.schemas import CarUserCreate, CarUserResponse
+from web.schemas import CarUserCreate, CarUserResponse, CarUserDetailedResponse
 from application.services.interfaces.i_car_user_service import ICarUserService
 from infrastructure.repositories.car_user import CarUserRepository
 from web.mapper import CarUserMapper
@@ -9,6 +9,20 @@ class CarUserService(ICarUserService):
     def __init__(self, car_user_repo: CarUserRepository):
         self.car_user_repo = car_user_repo
         self.mapper = CarUserMapper()
+        
+    async def get_detailed_by_user(self, user_id: int) -> List[CarUserDetailedResponse]:
+        car_users_data = await self.car_user_repo.get_detailed_by_user(user_id)
+        detailed_responses = []
+        
+        for car_user, car_number in car_users_data:
+            detailed_response = CarUserDetailedResponse(
+                id=car_user.id,
+                user_id=car_user.user_id,
+                car_number=car_number
+            )
+            detailed_responses.append(detailed_response)
+            
+        return detailed_responses
 
     async def assign_car(self, data: CarUserCreate) -> CarUserResponse:
         car_user = self.mapper.to_entity(data)

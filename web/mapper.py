@@ -216,7 +216,7 @@ class ParkingPlaceMapper:
     def to_entity(dto: ParkingPlaceCreate) -> ParkingPlace:
         return ParkingPlace(
             place_number=dto.place_number,
-            place_status_id=dto.place_status_id,
+            place_status_id=None,  # По умолчанию статус NULL
             parking_zone_id=dto.parking_zone_id
         )
 

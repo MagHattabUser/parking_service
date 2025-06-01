@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict
 
 from web.schemas import CameraCreate, CameraResponse
 
@@ -26,4 +26,8 @@ class ICameraService(ABC):
 
     @abstractmethod
     async def update_camera(self, camera_id: int, data: CameraCreate) -> CameraResponse:
+        pass
+
+    @abstractmethod
+    async def get_zone_snapshots(self, zone_id: int) -> Dict[int, bytes]:
         pass

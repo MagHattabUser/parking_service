@@ -13,19 +13,160 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  app:
+  parking_service:
     build: .
-    container_name: fastapi_app
+    container_name: parking_service
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      ml_director:
+        condition: service_started
+      cutter_service:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      minio:
+        condition: service_started
     ports:
       - "8000:8000"
     environment:
+      # База данных
       DATABASE_URL: postgresql+asyncpg://postgres:admin@db:5432/parking
+      # JWT настройки остаются по умолчанию из config.py
+      # Переносим JWT настройки в переменные окружения
+      JWT_SECRET_KEY: "44b46c7d69279c7ee01ed9147704ed78190a5ff9c1560c910a562ec60f9b06b0"
+      JWT_ALGORITHM: "HS256"
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      # Сервисы
+      DIRECTOR_SERVICE_URL: http://ml_director:8080
+      CUTTER_SERVICE_URL: http://cutter_service:8070
+      # Minio
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_SECURE: "False"
+      BUCKET_NAME: car-places
+      # RabbitMQ
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_VHOST: /
+      DRAW_QUEUE: draw_queue
+      DRAW_RESULT_QUEUE: draw_result_queue
     volumes:
       - .:/app
-    command: ["sh", "-c", "sleep 10 &&python init_db.py && uvicorn web.app:app --host 0.0.0.0 --port 8000"]
+    # Ждем завершения инициализации базы данных перед запуском
+    command: ["sh", "-c", "sleep 45 && echo 'Waiting for database to be ready...' && python init_db.py && uvicorn web.app:app --host 0.0.0.0 --port 8000"]
+
+  ml_classify:
+    image: maghattab/ml_classify
+    ports:
+      - "8081:8081"
+
+  ml_detect:
+    image: maghattab/ml_detect
+    ports:
+      - "8082:8082"
+
+  ml_ocr:
+    image: maghattab/ml_ocr
+    ports:
+      - "8083:8083"
+
+  ml_director:
+    image: maghattab/ml_director
+    ports:
+      - "8080:8080"
+    environment:
+      - DETECT_PLATES_URL=http://ml_detect:8082/detect
+      - OCR_URL=http://ml_ocr:8083/recognize
+      - CLASSIFIER_PARKING_PLACE_URL=http://ml_classify:8081/predict
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_SECURE=False
+      - BUCKET_NAME=car-places
+    # Устанавливаем пакет minio и добавляем задержку для ожидания RabbitMQ
+    command: ["/bin/sh", "-c", "pip install minio && sleep 15 && uvicorn app.main:app --host 0.0.0.0 --port 8080"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      ml_detect:
+        condition: service_started
+      ml_ocr:
+        condition: service_started
+      ml_classify:
+        condition: service_started
+      minio:
+        condition: service_started
+
+  cutter_service:
+    image: maghattab/cutter_service
+    ports:
+      - "8070:8070"
+    environment:
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_SECURE=False
+      - BUCKET_NAME=car-places
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - DRAW_QUEUE=draw_queue
+      - CUT_QUEUE=cut_queue
+    # Переопределяем команду запуска с добавлением задержки и патчем кода
+    command: ["/bin/sh", "-c", "sleep 20 && sed -i 's/localhost/minio/g' /app/app/utils/s3_utils.py && uvicorn app.main:app --host 0.0.0.0 --port 8070"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  # MinIO бакет создается автоматически сервисом cutter_service при запуске
 
 volumes:
   postgres_data:
+  rabbitmq_data:
+  minio_data:

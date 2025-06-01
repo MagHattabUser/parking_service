@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 
-from web.schemas import ParkingZoneCreate, ParkingZoneResponse, ParkingZoneDetailedResponse
+from web.schemas import (
+    ParkingZoneCreate, 
+    ParkingZoneResponse, 
+    ParkingZoneDetailedResponse,
+    PlaceStatusUpdateResponse
+)
 from application.services.interfaces.i_parking_zone_service import IParkingZoneService
 from web.container import get_container
 
@@ -57,7 +62,23 @@ async def get_zones_by_admin(admin_id: int, service: IParkingZoneService = Depen
 @router.get("/{zone_id}/detailed", response_model=ParkingZoneDetailedResponse, summary="Get Zone Detailed Information")
 async def get_zone_detailed(zone_id: int, service: IParkingZoneService = Depends(get_zone_service)):
     try:
-        return await service.get_zone_detailed(zone_id)
+        return await service.get_detailed_info(zone_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@router.post("/{zone_id}/process-image", response_model=PlaceStatusUpdateResponse, summary="Process Zone Image and Update Parking Places Status")
+async def process_zone_image(zone_id: int, service: IParkingZoneService = Depends(get_zone_service)):
+    """
+    Обрабатывает изображение зоны парковки и обновляет статусы мест.
+    
+    - **zone_id**: ID зоны парковки
+    
+    Возвращает информацию о количестве обновленных мест.
+    """
+    try:
+        return await service.process_zone_image(zone_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing zone image: {str(e)}")
 

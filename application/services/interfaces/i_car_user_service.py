@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from web.schemas import CarUserCreate, CarUserResponse
+from web.schemas import CarUserCreate, CarUserResponse, CarUserDetailedResponse
 
 class ICarUserService(ABC):
+    @abstractmethod
+    async def get_detailed_by_user(self, user_id: int) -> List[CarUserDetailedResponse]:
+        pass
+        
     @abstractmethod
     async def assign_car(self, data: CarUserCreate) -> CarUserResponse:
         pass

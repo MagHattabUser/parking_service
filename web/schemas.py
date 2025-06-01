@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import List, Optional, Any
+from typing import List, Dict, Optional, Any
 from datetime import datetime, time
 import re
 
@@ -68,6 +68,14 @@ class CarUserCreate(CarUserBase):
 class CarUserResponse(CarUserBase):
     id: int
 
+    class Config:
+        orm_mode = True
+
+class CarUserDetailedResponse(BaseModel):
+    id: int
+    user_id: int
+    car_number: str
+    
     class Config:
         orm_mode = True
 
@@ -147,11 +155,18 @@ class ParkingZoneBase(BaseModel):
     end_time: time
     price_per_minute: int
     location: Any  # JSONB field
-    update_time: datetime
+    update_time: Optional[datetime] = None
     admin_id: int
 
 class ParkingZoneCreate(ParkingZoneBase):
-    pass
+    zone_name: str
+    zone_type_id: int
+    address: str
+    start_time: time
+    end_time: time
+    price_per_minute: int
+    location: Any  # JSONB field
+    admin_id: int
 
 class ParkingZoneResponse(ParkingZoneBase):
     id: int
@@ -172,6 +187,7 @@ class ParkingZoneDetailedResponse(BaseModel):
     free_places: int
     occupied_places: int
     total_cameras: int
+    update_time: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -207,14 +223,16 @@ class CameraParkingPlaceResponse(CameraParkingPlaceBase):
 
 class ParkingPlaceBase(BaseModel):
     place_number: int
-    place_status_id: int
     parking_zone_id: int
 
 class ParkingPlaceCreate(ParkingPlaceBase):
     pass
 
-class ParkingPlaceResponse(ParkingPlaceBase):
+class ParkingPlaceResponse(BaseModel):
     id: int
+    place_number: int
+    place_status_id: Optional[int] = None
+    parking_zone_id: int
 
     class Config:
         orm_mode = True
@@ -225,6 +243,11 @@ class BookingBase(BaseModel):
     end_time: datetime
     parking_place_id: int
     booking_status_id: int
+    
+class BookingCreateWithoutEnd(BaseModel):
+    car_user_id: int
+    parking_place_id: int
+    booking_status_id: int = 1  # По умолчанию статус "Активно"
 
 class BookingCreate(BookingBase):
     pass
@@ -234,6 +257,28 @@ class BookingResponse(BookingBase):
 
     class Config:
         orm_mode = True
+
+class BookingDetailedResponse(BaseModel):
+    id: int
+    address: str
+    zone_name: str
+    place_number: int
+    start_time: datetime
+    end_time: datetime
+    car_number: str
+    booking_status_name: str
+
+    class Config:
+        orm_mode = True
+        
+class BookingFinishResponse(BaseModel):
+    id: int
+    start_time: datetime
+    end_time: datetime
+    duration_minutes: int
+    price_per_minute: int
+    total_price: int
+    status: str
 
 class ViolationBase(BaseModel):
     car_number: str
@@ -270,3 +315,66 @@ class UserLogin(BaseModel):
 
 class AdminLogin(UserLogin):
     pass
+
+# Схемы для запроса на нарезку изображений
+class PlaceCut(BaseModel):
+    place_id: int
+    location: List[List[float]]
+
+class CutRequest(BaseModel):
+    image_url: str
+    places: List[PlaceCut]
+
+# Схемы для ответа сервиса нарезки
+class PlaceImage(BaseModel):
+    place_id: int
+    image_url: str
+
+class CutResponse(BaseModel):
+    place_images: List[PlaceImage]
+
+# Схемы для запроса на классификацию
+class S3ObjectRequest(BaseModel):
+    filename: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "filename": "parking_image.jpg"
+            }
+        }
+
+# Схемы для ответа сервиса классификации
+class ClassificationResponse(BaseModel):
+    class_id: int
+    class_name: str
+    status: str = "success"
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "class_id": 0,
+                "class_name": "Свободно",
+                "status": "success"
+            }
+        }
+
+# Схема для ответа от метода /detect сервиса директора
+class DetectionResponse(BaseModel):
+    status: str
+    plate_number: str | None = None
+    parking_status: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "status": "success",
+                "plate_number": "A123BC777",
+                "parking_status": "Занято"
+            }
+        }
+
+# Схема для ответа метода update_places_status
+class PlaceStatusUpdateResponse(BaseModel):
+    updated_places: int
+    message: str

@@ -105,7 +105,7 @@ class ParkingZone(Base):
     end_time = Column(Time, nullable=False)
     price_per_minute = Column(Integer, nullable=False)
     location = Column(JSONB, nullable=True)
-    update_time = Column(DateTime, nullable=False)
+    update_time = Column(DateTime, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"), nullable=False)
 
     zone_type = relationship("ZoneType", back_populates="parking_zones")
@@ -143,7 +143,7 @@ class ParkingPlace(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     place_number = Column(Integer, nullable=False)
-    place_status_id = Column(Integer, ForeignKey("place_statuses.id"), nullable=False)
+    place_status_id = Column(Integer, ForeignKey("place_statuses.id"), nullable=True)
     parking_zone_id = Column(Integer, ForeignKey("parking_zones.id"), nullable=False)
 
     status = relationship("PlaceStatus", back_populates="parking_places")

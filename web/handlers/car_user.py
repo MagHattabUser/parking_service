@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import List
 
 from web.container import get_container
-from web.schemas import CarUserCreate, CarUserResponse
+from web.schemas import CarUserCreate, CarUserResponse, CarUserDetailedResponse
 from application.services.interfaces.i_car_user_service import ICarUserService
 
 router = APIRouter(prefix="/car-user", tags=["car-user"])
@@ -26,23 +26,18 @@ async def get_all_car_users(service: ICarUserService = Depends(get_car_user_serv
 async def update_car_user(id: int, data: CarUserCreate, service: ICarUserService = Depends(get_car_user_service)):
     return await service.update_car_user(id, data)
 
-@router.delete("/{id}")
+@router.delete("/{id}", summary="Отвязка автомобиля от пользователя")
 async def delete_car_user(id: int, service: ICarUserService = Depends(get_car_user_service)):
     await service.delete_car_user(id)
     return {"message": "Car-User connection deleted successfully"}
 
-@router.post("/assign", response_model=CarUserResponse, summary="Привязка автомобиля к пользователю")
-async def assign_car(data: CarUserCreate, service: ICarUserService = Depends(get_car_user_service)):
-    return await service.assign_car(data)
-
-@router.delete("/unassign/{car_user_id}", summary="Отвязка автомобиля от пользователя")
-async def unassign_car(car_user_id: int, service: ICarUserService = Depends(get_car_user_service)):
-    await service.unassign_car(car_user_id)
-    return {"message": "Car unassigned from user successfully"}
-
 @router.get("/user/{user_id}", response_model=List[CarUserResponse], summary="Машины пользователя")
 async def list_by_user(user_id: int, service: ICarUserService = Depends(get_car_user_service)):
     return await service.list_by_user(user_id)
+    
+@router.get("/user/{user_id}/detailed", response_model=List[CarUserDetailedResponse], summary="Детальная информация по машинам пользователя")
+async def get_detailed_by_user(user_id: int, service: ICarUserService = Depends(get_car_user_service)):
+    return await service.get_detailed_by_user(user_id)
 
 @router.get("/car/{car_id}", response_model=List[CarUserResponse], summary="Пользователи машины")
 async def list_by_car(car_id: int, service: ICarUserService = Depends(get_car_user_service)):

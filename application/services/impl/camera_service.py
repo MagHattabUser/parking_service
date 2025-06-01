@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Dict
 from web.schemas import CameraCreate, CameraResponse
 from application.services.interfaces.i_camera_service import ICameraService
 from infrastructure.repositories.camera import CameraRepository
 from web.mapper import CameraMapper
 from domain.models import Camera
+from infrastructure.utils.s3_utils import get_image_from_minio
 
 class CameraService(ICameraService):
     async def list_by_zone(self, zone_id: int) -> List[CameraResponse]:
@@ -44,4 +45,18 @@ class CameraService(ICameraService):
         camera = await self.camera_repo.get_by_id(Camera, camera_id)
         if not camera:
             raise ValueError(f"Camera with id {camera_id} not found")
-        await self.camera_repo.delete(camera) 
+        await self.camera_repo.delete(camera)
+
+    async def get_zone_snapshots(self, zone_id: int) -> Dict[int, bytes]:
+        cameras = await self.camera_repo.list_by_zone(zone_id)
+        if not cameras:
+            raise ValueError(f"No cameras found for zone {zone_id}")
+        
+        snapshots = {}
+        for camera in cameras:
+            # В реальном приложении здесь будет запрос к камере
+            # Сейчас просто получаем тестовое изображение из MinIO
+            image_data = get_image_from_minio("images/test.jpg")
+            snapshots[camera.id] = image_data
+            
+        return snapshots 

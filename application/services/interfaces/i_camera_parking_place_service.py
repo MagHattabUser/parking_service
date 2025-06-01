@@ -40,3 +40,7 @@ class ICameraParkingPlaceService(ABC):
     @abstractmethod
     async def delete_camera_parking_place(self, camera_parking_place_id: int) -> None:
         pass
+
+    @abstractmethod
+    async def get_marked_zone_image(self, zone_id: int) -> dict:
+        pass

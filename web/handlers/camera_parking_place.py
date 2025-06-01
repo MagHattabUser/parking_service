@@ -38,3 +38,7 @@ async def list_places_for_camera(camera_id: int, service: ICameraParkingPlaceSer
 @router.get("/place/{place_id}", response_model=List[CameraParkingPlaceResponse])
 async def list_cameras_for_place(place_id: int, service: ICameraParkingPlaceService = Depends(get_camera_parking_place_service)):
     return await service.list_cameras_for_place(place_id)
+
+@router.get("/zone/{zone_id}/marked-image")
+async def get_marked_zone_image(zone_id: int, service: ICameraParkingPlaceService = Depends(get_camera_parking_place_service)):
+    return await service.get_marked_zone_image(zone_id)

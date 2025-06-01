@@ -1,9 +1,12 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 from domain.models import Base
+from web.config import Configs
 
+# Получаем URL базы данных из общего конфигурационного файла
+config = Configs()
+DATABASE_URL = config.DATABASE_URL
 
-DATABASE_URL = "postgresql+asyncpg://postgres:admin@db:5432/parking"
-
+print(f"Connecting to database at: {DATABASE_URL}")
 engine = create_async_engine(DATABASE_URL, echo=True)
 
 async def create_tables():
