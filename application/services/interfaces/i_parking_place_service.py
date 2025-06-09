@@ -31,3 +31,7 @@ class IParkingPlaceService(ABC):
     @abstractmethod
     async def update_place(self, place_id: int, data: ParkingPlaceCreate) -> ParkingPlaceResponse:
         pass
+
+    @abstractmethod
+    async def update_place_status(self, place_id: int, status_id: int) -> ParkingPlaceResponse:
+        pass

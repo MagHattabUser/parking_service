@@ -50,14 +50,7 @@ class BookingService(IBookingService):
         created_booking = await self.booking_repo.save(booking)
         
         # Обновляем статус места на "занято"
-        await self.parking_place_service.update_place(
-            data.parking_place_id,
-            ParkingPlaceCreate(
-                place_number=place.place_number,
-                place_status_id=2,  # занято
-                parking_zone_id=place.parking_zone_id
-            )
-        )
+        await self.parking_place_service.update_place_status(data.parking_place_id, 2)  # 2 - занято
         
         return self.mapper.to_response(created_booking)
 

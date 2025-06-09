@@ -4,6 +4,7 @@ from web.schemas import ParkingPlaceCreate, ParkingPlaceResponse
 from web.mapper import ParkingPlaceMapper
 from application.services.interfaces.i_parking_place_service import IParkingPlaceService
 from domain.models import ParkingPlace
+from web.schemas import ParkingPlaceResponse # Ensure ParkingPlaceResponse is imported if not already
 
 class ParkingPlaceService(IParkingPlaceService):
     def __init__(self, parking_place_repo: ParkingPlaceRepository):
@@ -52,3 +53,12 @@ class ParkingPlaceService(IParkingPlaceService):
         if not place:
             raise ValueError(f"Parking place with id {place_id} not found")
         await self.parking_place_repo.delete(place)
+
+    async def update_place_status(self, place_id: int, status_id: int) -> ParkingPlaceResponse:
+        place = await self.parking_place_repo.get_by_id(ParkingPlace, place_id)
+        if not place:
+            raise ValueError(f"Parking place with id {place_id} not found")
+        
+        place.place_status_id = status_id
+        updated_place_entity = await self.parking_place_repo.update(place) # Assuming repo.update() takes the entity and returns it
+        return self.mapper.to_response(updated_place_entity)

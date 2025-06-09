@@ -18,7 +18,8 @@ class CarUserService(ICarUserService):
             detailed_response = CarUserDetailedResponse(
                 id=car_user.id,
                 user_id=car_user.user_id,
-                car_number=car_number
+                car_number=car_number,
+                car_id=car_user.car_id
             )
             detailed_responses.append(detailed_response)
             

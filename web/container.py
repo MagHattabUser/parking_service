@@ -115,7 +115,10 @@ def _register_repositories(container: punq.Container) -> None:
 
 
 def _register_services(container: punq.Container) -> None:
-    container.register(IParkingZoneService, factory=lambda: ParkingZoneService(container.resolve(IParkingZone)))
+    container.register(IParkingZoneService, factory=lambda: ParkingZoneService(
+        container.resolve(IParkingZone),
+        container.resolve(IBookingService)
+    ))
     container.register(IParkingPlaceService, factory=lambda: ParkingPlaceService(container.resolve(IParkingPlace)))
     container.register(IAdminService, factory=lambda: AdminService(container.resolve(IAdmin)))
     container.register(IBookingService, factory=lambda: BookingService(

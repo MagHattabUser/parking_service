@@ -75,6 +75,7 @@ class CarUserDetailedResponse(BaseModel):
     id: int
     user_id: int
     car_number: str
+    car_id: int
     
     class Config:
         orm_mode = True

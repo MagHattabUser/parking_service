@@ -5,6 +5,8 @@ import uuid
 import asyncio
 import aiohttp
 from typing import List, Union, Dict
+
+from application.services.interfaces.i_booking_service import IBookingService
 from web.schemas import (
     ParkingZoneCreate, 
     ParkingZoneResponse, 
@@ -23,9 +25,12 @@ from domain.models import ParkingZone
 from web.config import Configs
 from loguru import logger
 from infrastructure.utils.rabbitmq_utils import rabbitmq_client
+from datetime import datetime, timedelta
+
 
 class ParkingZoneService(IParkingZoneService):
-    def __init__(self, parking_zone_repo: ParkingZoneRepository):
+    def __init__(self, parking_zone_repo: ParkingZoneRepository, booking_service: IBookingService):
+        self.booking_service = booking_service
         self.parking_zone_repo = parking_zone_repo
         self.mapper = ParkingZoneMapper()
 
@@ -205,10 +210,20 @@ class ParkingZoneService(IParkingZoneService):
         if not places_with_locations:
             logger.warning(f"No parking places found for zone_id={zone_id}")
             return PlaceStatusUpdateResponse(updated_places=0, message="No parking places found in this zone")
+    
+        current_time = datetime.now()
+
+        active_bookings = await self.booking_service.get_active_bookings(current_time)
+        
+        # Создаем сет забронированных мест для быстрой проверки
+        booked_place_ids = {booking.parking_place_id for booking in active_bookings}
+
+        places_to_check = [place_tuple for place_tuple in places_with_locations 
+                              if place_tuple[0].id not in booked_place_ids]
         
         # Подготавливаем данные для запроса на нарезку
         cut_places = []
-        for place, place_data in places_with_locations:
+        for place, place_data in places_to_check:
             # Если у места нет координат, пропускаем его
             if not place_data["location"]:
                 logger.warning(f"Place id={place.id} has no location data")
@@ -309,7 +324,7 @@ class ParkingZoneService(IParkingZoneService):
                     
                     # Ожидаем ответ с таймаутом 15 секунд
                     try:
-                        classification = await asyncio.wait_for(class_future, timeout=15.0)
+                        classification = await asyncio.wait_for(class_future, timeout=30.0)
                         class_id = classification.get("class_id")
                         class_name = classification.get("class_name")
                         
