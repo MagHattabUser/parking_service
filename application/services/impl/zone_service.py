@@ -52,7 +52,7 @@ class ParkingZoneService(IParkingZoneService):
         return [self.mapper.to_response(zone) for zone in zones]
 
     async def update_zone(self, zone_id: int, data: ParkingZoneCreate) -> ParkingZoneResponse:
-        self._validate_polygon(data.location)
+        #self._validate_polygon(data.location)
         zone = await self.parking_zone_repo.get_by_id(ParkingZone, zone_id)
         if not zone:
             raise ValueError(f"Parking zone with id {zone_id} not found")
