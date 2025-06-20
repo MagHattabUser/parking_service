@@ -9,10 +9,12 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: parking
+      TZ: Asia/Yekaterinburg
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -36,6 +38,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      TZ: Asia/Yekaterinburg
       # База данных
       DATABASE_URL: postgresql+asyncpg://postgres:admin@db:5432/parking
       # JWT настройки остаются по умолчанию из config.py
@@ -62,6 +65,7 @@ services:
       DRAW_RESULT_QUEUE: draw_result_queue
     volumes:
       - .:/app
+      - /etc/localtime:/etc/localtime:ro
     # Ждем завершения инициализации базы данных перед запуском
     command: ["sh", "-c", "sleep 45 && echo 'Waiting for database to be ready...' && python init_db.py && uvicorn web.app:app --host 0.0.0.0 --port 8000"]
 
@@ -69,22 +73,35 @@ services:
     image: maghattab/ml_classify
     ports:
       - "8081:8081"
+    environment:
+      - TZ=Asia/Yekaterinburg
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   ml_detect:
     image: maghattab/ml_detect
     ports:
       - "8082:8082"
+    environment:
+      - TZ=Asia/Yekaterinburg
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   ml_ocr:
     image: maghattab/ml_ocr
     ports:
       - "8083:8083"
+    environment:
+      - TZ=Asia/Yekaterinburg
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   ml_director:
     image: maghattab/ml_director
     ports:
       - "8080:8080"
     environment:
+      - TZ=Asia/Yekaterinburg
       - DETECT_PLATES_URL=http://ml_detect:8082/detect
       - OCR_URL=http://ml_ocr:8083/recognize
       - CLASSIFIER_PARKING_PLACE_URL=http://ml_classify:8081/predict
@@ -97,6 +114,8 @@ services:
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_SECURE=False
       - BUCKET_NAME=car-places
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     # Устанавливаем пакет minio и добавляем задержку для ожидания RabbitMQ
     command: ["/bin/sh", "-c", "pip install minio && sleep 15 && uvicorn app.main:app --host 0.0.0.0 --port 8080"]
     depends_on:
@@ -116,6 +135,7 @@ services:
     ports:
       - "8070:8070"
     environment:
+      - TZ=Asia/Yekaterinburg
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
@@ -127,6 +147,8 @@ services:
       - RABBITMQ_PASSWORD=guest
       - DRAW_QUEUE=draw_queue
       - CUT_QUEUE=cut_queue
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     # Переопределяем команду запуска с добавлением задержки и патчем кода
     command: ["/bin/sh", "-c", "sleep 20 && sed -i 's/localhost/minio/g' /app/app/utils/s3_utils.py && uvicorn app.main:app --host 0.0.0.0 --port 8070"]
     depends_on:
@@ -142,15 +164,17 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
+      - TZ=Asia/Yekaterinburg
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
 
   minio:
     image: minio/minio

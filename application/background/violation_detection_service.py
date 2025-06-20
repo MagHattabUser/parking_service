@@ -136,12 +136,12 @@ class ViolationDetectionService:
                 # Сохраняем изображение в MinIO и получаем URL
                 # Для простоты используем фиксированный URL
                 # В реальном приложении здесь будет загрузка изображения в S3/MinIO
-                image_url = "images/test.jpg"
+                image_url = f"images/test_{zone_id}.jpg"
                 logger.info(f"Got camera snapshot for zone {zone_id}, camera {first_camera_id}")
             except Exception as e:
                 logger.error(f"Error getting camera snapshots for zone {zone_id}: {e}")
                 # Используем запасной вариант с тестовым изображением
-                image_url = "images/test.jpg"
+                image_url = f"images/test_{zone_id}.jpg"
 
             # Проверяем каждое незабронированное место
             for place_tuple in places_to_check:

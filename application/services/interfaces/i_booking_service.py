@@ -52,3 +52,7 @@ class IBookingService(ABC):
     @abstractmethod
     async def finish_booking(self, booking_id: int) -> BookingFinishResponse:
         pass
+
+    @abstractmethod
+    async def complete_expired_bookings(self) -> None:
+        pass

@@ -78,7 +78,7 @@ class CameraParkingPlaceService(ICameraParkingPlaceService):
     async def get_marked_zone_image(self, zone_id: int) -> dict:
         try:
             logger.info(f"Getting marked zone image for zone_id: {zone_id}")
-            image_url = "images/test.jpg"  # Заглушка
+            image_url = f"images/test_{zone_id}.jpg"  # Заглушка
             
             logger.info("Fetching parking places from database")
             places = await self.camera_parking_place_repo.list_places_by_zone(zone_id)
@@ -94,7 +94,7 @@ class CameraParkingPlaceService(ICameraParkingPlaceService):
                     draw_places.append({
                         "place_id": place.parking_place.place_number,  # Используем номер места вместо id
                         "location": place.location,
-                        "status": place.parking_place.place_status_id == 1  # 1 - свободно (True), 2 - занято (False)
+                        "status": place.parking_place.place_status_id == 2  # 1 - свободно (True), 2 - занято (False)
                     })
                 except Exception as place_error:
                     logger.exception(f"Error processing place {place.id}: {place_error}")

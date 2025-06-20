@@ -60,5 +60,9 @@ class ParkingPlaceService(IParkingPlaceService):
             raise ValueError(f"Parking place with id {place_id} not found")
         
         place.place_status_id = status_id
-        updated_place_entity = await self.parking_place_repo.update(place) # Assuming repo.update() takes the entity and returns it
+        updated_place_entity = await self.parking_place_repo.update(place)
         return self.mapper.to_response(updated_place_entity)
+
+    async def automate_place_statuses(self) -> None:
+        await self.parking_place_repo.free_up_expired_booking_places()
+        await self.parking_place_repo.occupy_started_booking_places()

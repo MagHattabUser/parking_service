@@ -55,7 +55,7 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, index=True)
     car_user_id = Column(Integer, ForeignKey("car_users.id"), nullable=False)
     start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=True)
     parking_place_id = Column(Integer, ForeignKey("parking_places.id"), nullable=False)
     booking_status_id = Column(Integer, ForeignKey("booking_statuses.id"), nullable=False)
 

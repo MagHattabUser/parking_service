@@ -241,7 +241,7 @@ class ParkingPlaceResponse(BaseModel):
 class BookingBase(BaseModel):
     car_user_id: int
     start_time: datetime
-    end_time: datetime
+    end_time: Optional[datetime]
     parking_place_id: int
     booking_status_id: int
     
@@ -265,7 +265,7 @@ class BookingDetailedResponse(BaseModel):
     zone_name: str
     place_number: int
     start_time: datetime
-    end_time: datetime
+    end_time: Optional[datetime]
     car_number: str
     booking_status_name: str
 

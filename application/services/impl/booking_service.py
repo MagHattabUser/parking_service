@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 from web.schemas import BookingCreate, BookingResponse, ParkingPlaceCreate, BookingDetailedResponse, BookingCreateWithoutEnd, BookingFinishResponse
 from application.services.interfaces.i_booking_service import IBookingService
 from application.services.interfaces.i_parking_place_service import IParkingPlaceService
@@ -20,13 +20,22 @@ class BookingService(IBookingService):
     async def get_active_bookings(self, current_time: datetime) -> List[BookingResponse]:
         """
         Получает список активных бронирований на указанный момент времени.
-        Активным считается бронирование, если current_time находится между start_time и end_time.
+        Активным считается бронирование, если current_time находится между start_time и end_time,
+        либо если время окончания не установлено, а время начала уже прошло.
         """
         bookings = await self.booking_repo.get_by_all(Booking)
-        active_bookings = [
-            booking for booking in bookings 
-            if booking.start_time <= current_time <= booking.end_time and booking.booking_status_id == 1  # Предполагаем, что статус "активно" имеет id = 1
-        ]
+        active_bookings = []
+        for booking in bookings:
+            if booking.booking_status_id == 1:  # Предполагаем, что статус "активно" имеет id = 1
+                # Убедимся, что current_time наивный для сравнения
+                naive_current_time = current_time.replace(tzinfo=None)
+                if booking.end_time is not None:
+                    if booking.start_time <= naive_current_time <= booking.end_time:
+                        active_bookings.append(booking)
+                else:  # end_time is None
+                    if booking.start_time <= naive_current_time:
+                        active_bookings.append(booking)
+        
         return [self.mapper.to_response(booking) for booking in active_bookings]
 
     async def list_by_user(self, user_id: int) -> List[BookingResponse]:
@@ -38,20 +47,21 @@ class BookingService(IBookingService):
         return [self.mapper.to_response(booking) for booking in bookings]
 
     async def create_booking(self, data: BookingCreate) -> BookingResponse:
-        # Проверяем статус места
-        place = await self.parking_place_service.get_place(data.parking_place_id)
-        
-        # Предполагаем, что статус "занято" имеет id = 2
-        if place.place_status_id == 2:  # занято
-            raise ValueError("Парковочное место уже занято")
-        
-        # Создаем бронирование
+        # 1. Проверяем на пересечение с существующими бронированиями
+        if await self.booking_repo.has_overlapping_booking(
+            data.parking_place_id, data.start_time, data.end_time
+        ):
+            raise ValueError("Выбранное время для бронирования уже занято.")
+
+        # 2. Создаем бронирование
         booking = self.mapper.to_entity(data)
         created_booking = await self.booking_repo.save(booking)
-        
-        # Обновляем статус места на "занято"
-        await self.parking_place_service.update_place_status(data.parking_place_id, 2)  # 2 - занято
-        
+
+        # 3. Обновляем статус места на "занято", только если бронь начинается сейчас
+        now = datetime.utcnow()
+        if created_booking.start_time <= now:
+            await self.parking_place_service.update_place_status(data.parking_place_id, 2)  # 2 - занято
+
         return self.mapper.to_response(created_booking)
 
     async def get_booking(self, booking_id: int) -> BookingResponse:
@@ -126,7 +136,7 @@ class BookingService(IBookingService):
             raise ValueError(f"Parking place {data.parking_place_id} is already occupied")
         
         # Создаем объект бронирования с текущим временем начала и без конца
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.utcnow()
         
         booking = Booking(
             car_user_id=data.car_user_id,
@@ -137,7 +147,7 @@ class BookingService(IBookingService):
         )
         
         # Сохраняем бронирование
-        created_booking = await self.booking_repo.create(booking)
+        created_booking = await self.booking_repo.save(booking)
         
         # Обновляем статус места на 'Занято'
         await self.parking_place_service.update_place_status(data.parking_place_id, 2)
@@ -174,7 +184,7 @@ class BookingService(IBookingService):
         place = await self.parking_place_service.get_place(booking.parking_place_id)
         
         # Обновляем бронирование - устанавливаем время окончания и меняем статус
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.utcnow()
         booking.end_time = current_time
         booking.booking_status_id = 2  # Завершено
         
@@ -204,3 +214,6 @@ class BookingService(IBookingService):
             total_price=total_price,
             status="Завершено"
         )
+
+    async def complete_expired_bookings(self) -> None:
+        await self.booking_repo.complete_expired_bookings()

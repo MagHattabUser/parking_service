@@ -35,3 +35,7 @@ class IParkingPlaceService(ABC):
     @abstractmethod
     async def update_place_status(self, place_id: int, status_id: int) -> ParkingPlaceResponse:
         pass
+
+    @abstractmethod
+    async def automate_place_statuses(self) -> None:
+        pass

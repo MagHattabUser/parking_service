@@ -56,7 +56,8 @@ class CameraService(ICameraService):
         for camera in cameras:
             # В реальном приложении здесь будет запрос к камере
             # Сейчас просто получаем тестовое изображение из MinIO
-            image_data = get_image_from_minio("images/test.jpg")
+            image_name = f"images/test_{zone_id}.jpg"
+            image_data = get_image_from_minio(image_name)
             snapshots[camera.id] = image_data
             
         return snapshots 
